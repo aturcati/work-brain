@@ -2,6 +2,20 @@
 
 Personal knowledge base maintained by Claude. Built on the LLM-wiki pattern.
 
+## Getting started
+
+This repo ships the **framework** — the `/kb-*` skills, graph schema (`.kb/schema.cypher`), and conventions (`AGENTS.md`). Your actual knowledge (`raw/`, `wiki/`) lives only on your machine and is gitignored, so a fresh clone has none of it.
+
+```bash
+git clone https://github.com/aturcati/work-brain && cd work-brain
+brew install uv qmd          # prerequisites — see below
+# Create the runtime directories the skills read/write (gitignored, absent in a clone):
+mkdir -p raw/inbox/{journal,meetings,emails,chats,clippings,docs} \
+         wiki/{people,orgs,projects,topics,decisions,meetings,sources,artifacts,threads,tofile}
+```
+
+Then drop a note into `raw/inbox/journal/` and run `/kb-ingest`, or run `/kb-collect` to pull from providers. (`/kb-init` scaffolds a vault from scratch in an *empty* directory; it intentionally aborts if `CLAUDE.md` already exists, as it does in a clone — so use the `mkdir` above instead.)
+
 ## How it works
 
 - **You** drop sources into `raw/inbox/<channel>/` (or run `/kb-collect` to pull from providers)
@@ -79,17 +93,13 @@ The skill you reach for most is `/kb-query`. The two that keep the vault healthy
 
 ## Layers
 
-| Layer | Path | Owner |
-|---|---|---|
-| Raw sources | `raw/` | Immutable — never edited |
-| Synthesis wiki | `wiki/` | Claude |
-| Schema + rules | `CLAUDE.md` | You + Claude (co-evolved) |
+`raw/` (immutable sources) → `wiki/` (Claude's synthesis) → derived graph. The repo ships the schema and rules; see [STRUCTURE.md](STRUCTURE.md) for the full committed-vs-private layout.
 
 ## Slash commands
 
 | Command | What it does |
 |---|---|
-| `/kb-collect` | Pull from email, Teams, calendar, web URLs |
+| `/kb-collect` | Pull from email, Teams, MeetGeek transcripts, chats, web clippings, docs |
 | `/kb-ingest` | Process inbox → wiki |
 | `/kb-query` | Ask questions with graph-enhanced retrieval |
 | `/kb-graph promote` | Review and promote LLM-proposed edges |

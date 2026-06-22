@@ -121,7 +121,7 @@ Unknown edge keys are rejected by `/kb-graph validate`.
 ## Diff strategy
 
 - *Fan-out skills* (`kb-ingest`, `kb-compile`): emit ONE consolidated diff per source → atomic commit via `.kb-staging/<txn-id>/` → on success rename into `wiki/`. On failure: drop staging, move source to `raw/quarantine/` with sibling `.error.md`, log error.
-- *Maintenance skills* (`kb-rename`, `kb-merge`, `kb-refactor`, `kb-archive`): require per-batch confirmation when touching > 5 files.
+- *Maintenance skills* (`kb-rename`, `kb-merge`, `kb-refactor`, `kb-archive`, `kb-undo-ingest`): require per-batch confirmation when touching > 5 files.
 - *Read skills* (`kb-query`, `kb-lint`, `kb-status`): no writes, no diff.
 
 ## Idempotency state files

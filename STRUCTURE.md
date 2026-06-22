@@ -63,5 +63,7 @@ wiki/{people,orgs,projects,topics,decisions,meetings,sources,artifacts,threads,t
 wiki/{_inbox,_maps,archive,log-archive}/
 ```
 
+**Bootstrapping these:** `/kb-init` generates the whole scaffold (this layout + `CLAUDE.md` + schema + skills) in an *empty* directory — it aborts if `CLAUDE.md` already exists. In a clone the framework is already present, so create just the runtime directories with the `mkdir` in [README.md](README.md#getting-started).
+
 See `AGENTS.md` for the full frontmatter contract, identity keys, graph schema,
 and operational invariants.
