@@ -1,0 +1,19 @@
+# qmd exclusion list — files and dirs excluded from BM25/vector indexing
+
+# Operational logs and archives (high-noise, low-signal)
+wiki/log.md
+wiki/log-archive/
+wiki/_inbox/edges-archive/
+
+# Stub queues (not synthesis)
+wiki/tofile/
+
+# Internal state and tooling
+.kb-staging/
+raw/.collect-state.json
+raw/.ingest-state.json
+.kb/extract-state.json
+.qmd/
+
+# Session memory buffer
+.remember/

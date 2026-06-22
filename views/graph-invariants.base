@@ -1,0 +1,14 @@
+//: Obsidian Bases query — graph invariant violations.
+//2: "Checks: Person without works_at, Decision without sources, unresolved contradicts pairs."
+view: table
+filter: {}
+columns:
+  - file.name
+  - type
+  - works_at
+  - sources
+  - contradicts
+  - status
+views:
+  - type: table
+    name: Table

@@ -1,0 +1,36 @@
+# Allowlist strategy: ignore EVERYTHING, then re-include only structure + code.
+# Private content (raw/, wiki/, .remember/, .kb data, scripts/, docs/) never leaves the vault.
+
+# 1. Ignore all top-level entries by default
+/*
+
+# 2. Re-include structure + config files
+!/.gitignore
+!/LICENSE
+!/AGENTS.md
+!/CLAUDE.md
+!/README.md
+!/STRUCTURE.md
+!/pytest.ini
+!/ruff.toml
+!/.qmdignore
+
+# 3. Re-include skill code (helpers, runbooks, tests)
+!/.agents/
+
+# 4. .kb: graph schema only — never the projected DB, aliases, or extracted state
+!/.kb/
+/.kb/*
+!/.kb/schema.cypher
+
+# 5. views: Obsidian query definitions only — not generated lint reports
+!/views/
+/views/*
+!/views/*.base
+
+# 6. Strip junk / caches / backups / generated artifacts anywhere in the tree
+**/__pycache__/
+*.pyc
+*.pyo
+*.bak
+.DS_Store

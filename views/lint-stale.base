@@ -1,0 +1,11 @@
+//: Obsidian Bases query — pages with last_verified older than 90 days.
+view: table
+filter: {}
+columns:
+  - file.name
+  - type
+  - last_verified
+  - status
+views:
+  - type: table
+    name: Table

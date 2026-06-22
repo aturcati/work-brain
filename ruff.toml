@@ -1,0 +1,18 @@
+# work-brain vault — Python helpers under .agents/skills/
+line-length = 100
+target-version = "py39"
+cache-dir = "${HOME}/.cache/ruff-work-brain"
+
+# scripts/ holds archived one-off run scripts — not maintained code
+exclude = ["scripts", ".kb-staging"]
+
+[lint]
+# defaults (E4, E7, E9, F) — correctness only, no style churn
+
+[lint.per-file-ignores]
+# lint.py re-exports core/checks for tests and uses their names in writers
+".agents/skills/kb-lint/lint.py" = ["F401", "F403", "F405"]
+# collect.py re-exports quality helpers for tests and CLI callers
+".agents/skills/kb-collect/collect.py" = ["F401"]
+# tests do sys.path inserts before imports (standalone-skill pattern)
+"*/tests/*" = ["F401", "E402", "E741"]

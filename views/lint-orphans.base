@@ -1,0 +1,12 @@
+//: Obsidian Bases query — pages with no inbound wikilinks (orphans).
+//2: Populate filter when Bases plugin is configured.
+view: table
+filter: {}
+columns:
+  - file.name
+  - type
+  - created
+  - last_verified
+views:
+  - type: table
+    name: Table

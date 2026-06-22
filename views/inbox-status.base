@@ -1,0 +1,11 @@
+//: Obsidian Bases query — files currently in raw/inbox/ by channel.
+view: table
+filter: {}
+columns:
+  - file.name
+  - source
+  - channel
+  - captured_at
+views:
+  - type: table
+    name: Table
