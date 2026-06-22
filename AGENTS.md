@@ -134,11 +134,11 @@ Unknown edge keys are rejected by `/kb-graph validate`.
 
 Rerunning any skill on already-processed input is a no-op (checked before any write).
 
-## Operational invariants (hard-won)
+## Operational invariants
 
-These are contract-level rules learned from production ingests. Skill checklists must uphold them; they are not optional style.
+These are contract-level rules. Skill checklists must uphold them; they are not optional style.
 
-- **`sources:` cites the FINAL path, never the inbox path.** Ingest moves a file from `raw/inbox/<channel>/<file>.md` to `raw/<channel>/YYYY/MM/<file>.md`. Wiki frontmatter and body citations must reference the destination path, even though the move happens in a later phase. Inbox-path citations break the moment the file moves — this single mistake required correcting 191 source paths across 179 pages. `/kb-lint` flags broken `sources:` paths.
+- **`sources:` cites the FINAL path, never the inbox path.** Ingest moves a file from `raw/inbox/<channel>/<file>.md` to `raw/<channel>/YYYY/MM/<file>.md`. Wiki frontmatter and body citations must reference the destination path, even though the move happens in a later phase. Inbox-path citations break the moment the file moves. `/kb-lint` flags broken `sources:` paths.
 - **Resolve provider slug suffixes before creating a page.** Some providers (e.g. MeetGeek transcripts) append a `-<6 hex chars>` suffix to the title slug. Strip the suffix and check for the base slug before writing a new page, or you create a duplicate of an entity that already exists. Generalise: when a candidate slug differs from an existing one only by a provider-generated suffix, treat it as the same entity (see `kb-ingest/match.py`).
 - **Multiple MeetGeek recordings of the same meeting.** MeetGeek can produce 2–3 recordings per meeting (e.g. primary, duplicate suffix, declined). Handling by case: (a) a `-<6hex>` variant whose base slug matches an existing page → merge into primary (add its raw path to the primary's `sources:`; no new wiki page); (b) a variant with a genuinely different slug (e.g. `declined-<title>`) → own wiki Meeting page with `related: ["[[wiki/meetings/<primary-slug>]]"]`; (c) never create a stub for the merge-case variant — it has no independent identity. Failure mode: naive ingest creates a duplicate Meeting page for case (a) when match.py runs after the suffixed file instead of before it.
 - **`works_at` inference on Person promotion.** When promoting a Person stub to canonical, infer `works_at: ["[[wiki/orgs/acme]]"]` if the entity's observed email is `@acme.com` or `@acme.onmicrosoft.com`. External persons (tag `external`) intentionally omit `works_at` — do not add it. This is an inference rule, not a hard constraint; `/kb-graph validate` only flags missing `works_at` when no `external` tag is present.
@@ -152,7 +152,7 @@ These are contract-level rules learned from production ingests. Skill checklists
 - **Decision pages need a wiki-source anchor at creation.** `/kb-graph validate` requires ≥1 `wiki/` wikilink in a Decision's `sources:` (raw paths alone fail), and `/kb-lint` requires ≥1 inbound link from a canonical page (links from `tofile/`, `index.md`, `overview.md` don't count). Create/link a `wiki/sources/` page for the originating document at the same time as the Decision stub.
 - **MeetGeek API rejects the python-urllib User-Agent** (403 behind WAF). Send a curl-like `User-Agent` header from Python scripts; curl itself works unmodified.
 - **Grown email threads re-collect via `thread_last`**. `check-id --last-received` compares against the per-conversation baseline in `outlook.thread_last` and prints `GROWN` when newer replies exist; the update is written as a sibling `<slug>-u<YYYYMMDD>.md` file (raw stays immutable) and `/kb-ingest` strips that suffix so it appends a `## Re-ingest` section to the existing Source page. Always pass `--last-received` on `record` — conversations without a baseline fall back to `SEEN` and stay blind to growth.
-- **End every fan-out run with `/kb-lint` + `/kb-graph validate`** and drive findings to zero before reporting done. These two checks caught every self-inflicted defect in the 2026-06-03 mass ingest (11→0, then 8→0).
+- **End every fan-out run with `/kb-lint` + `/kb-graph validate`** and drive findings to zero before reporting done — they reliably catch self-inflicted defects from a fan-out.
 
 ## Workflows
 
