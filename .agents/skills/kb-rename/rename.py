@@ -14,7 +14,6 @@ Vault root auto-detected (walks up for CLAUDE.md).
 """
 import argparse
 import io
-import re
 import shutil
 import sys
 import uuid
@@ -26,7 +25,7 @@ from ruamel.yaml import YAML as _YAML
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from common import (  # noqa: E402
     TYPE_TO_DIR, SKIP_DERIVED as SKIP_DIRS,
-    find_vault_root, acquire_inbox_lock, release_inbox_lock,
+    find_vault_root, acquire_inbox_lock, release_inbox_lock, wikilink_pattern,
 )
 
 SKIP_FILES = {"index.md", "overview.md", "log.md"}
@@ -44,14 +43,6 @@ class RenameResult:
     referring_files: list[Path] = field(default_factory=list)
     total_replacements: int = 0
     applied: bool = False
-
-
-def wikilink_pattern(type_dir: str, slug: str) -> re.Pattern:
-    # Match [[wiki/<type_dir>/<slug> followed by ], |, or # (anchor or section)
-    # Use re.escape to handle dashes safely.
-    return re.compile(
-        r"\[\[wiki/" + re.escape(type_dir) + r"/" + re.escape(slug) + r"(?=[\]|#])"
-    )
 
 
 def rewrite_wikilinks_in_text(

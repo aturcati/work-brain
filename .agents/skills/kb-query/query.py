@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from common import find_vault_root, graph_db_path  # noqa: E402
+from common import find_vault_root, graph_db_path, TYPE_TO_DIR  # noqa: E402
 
 
 EDGE_WEIGHTS: dict[str, float] = {
@@ -135,12 +135,6 @@ def print_entity_results(entity: dict, neighbors: list[dict]) -> None:
     for n in neighbors:
         print(f"  NEIGHBOR {n['slug']} ({n['type']}) via {n['rel_type']} weight={n['weight']}")
 
-
-TYPE_TO_DIR: dict[str, str] = {
-    "Person": "people", "Org": "orgs", "Project": "projects",
-    "Topic": "topics", "Decision": "decisions", "Meeting": "meetings",
-    "Source": "sources", "Artifact": "artifacts", "Event": "events",
-}
 
 _SKIP_PATH_PREFIXES = ("wiki/tofile/", "wiki/_inbox/", "wiki/log")
 

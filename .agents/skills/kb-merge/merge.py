@@ -13,7 +13,6 @@ Default: dry-run report. `--apply` writes via .kb-staging/<txn-id>/.
 Vault root auto-detected (walks up for CLAUDE.md).
 """
 import argparse
-import io
 import re
 import shutil
 import sys
@@ -27,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from common import (  # noqa: E402
     TYPE_TO_DIR, EDGE_KEYS, SKIP_DERIVED as SKIP_DIRS,
     find_vault_root, acquire_inbox_lock, release_inbox_lock,
+    wikilink_pattern, dump_page,
 )
 
 SKIP_FILES = {"index.md", "overview.md", "log.md"}
@@ -44,12 +44,6 @@ class MergeResult:
     referring_files: list[Path] = field(default_factory=list)
     total_replacements: int = 0
     applied: bool = False
-
-
-def wikilink_pattern(type_dir: str, slug: str) -> re.Pattern:
-    return re.compile(
-        r"\[\[wiki/" + re.escape(type_dir) + r"/" + re.escape(slug) + r"(?=[\]|#])"
-    )
 
 
 def rewrite_wikilinks_in_text(
@@ -197,17 +191,6 @@ def _read_yaml(path: Path) -> tuple[dict, str]:
     return fm, parts[2]
 
 
-def _dump_page(fm: dict, body: str) -> str:
-    yaml = _YAML()
-    yaml.preserve_quotes = True
-    buf = io.StringIO()
-    yaml.dump(fm, buf)
-    yaml_text = buf.getvalue()
-    if not yaml_text.endswith("\n"):
-        yaml_text += "\n"
-    return "---\n" + yaml_text + "---" + body
-
-
 def _find_page_by_slug(wiki: Path, type_: str, slug: str) -> Path | None:
     preferred = wiki / TYPE_TO_DIR[type_] / f"{slug}.md"
     if preferred.exists():
@@ -333,7 +316,7 @@ def apply_merge(
         staging.mkdir(parents=True, exist_ok=True)
 
         staged_primary = staging / "primary.md"
-        staged_primary.write_text(_dump_page(merged_fm, merged_body), encoding="utf-8")
+        staged_primary.write_text(dump_page(merged_fm, merged_body), encoding="utf-8")
 
         staged_secondary = staging / "secondary.md"
         staged_secondary.write_text(stub, encoding="utf-8")

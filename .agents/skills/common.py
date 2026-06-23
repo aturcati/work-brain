@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -101,6 +102,27 @@ def parse_frontmatter_text(text: str) -> dict | None:
 def parse_frontmatter(path: Path) -> dict | None:
     """Read file at path and parse its YAML frontmatter."""
     return parse_frontmatter_text(path.read_text(encoding="utf-8", errors="replace"))
+
+
+def wikilink_pattern(type_dir: str, slug: str) -> re.Pattern:
+    """Match `[[wiki/<type_dir>/<slug>` followed by `]`, `|`, or `#`."""
+    return re.compile(
+        r"\[\[wiki/" + re.escape(type_dir) + r"/" + re.escape(slug) + r"(?=[\]|#])"
+    )
+
+
+def dump_page(fm: dict, body: str) -> str:
+    """Serialize frontmatter + body to a markdown page. ruamel import deferred."""
+    import io
+    from ruamel.yaml import YAML  # deferred: keep common's module-level zero-dep contract
+    yaml = YAML()
+    yaml.preserve_quotes = True
+    buf = io.StringIO()
+    yaml.dump(fm, buf)
+    fm_text = buf.getvalue()
+    if not fm_text.endswith("\n"):
+        fm_text += "\n"
+    return f"---\n{fm_text}---{body}"
 
 
 def graph_db_path(vault: Path) -> Path:

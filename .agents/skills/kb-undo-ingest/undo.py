@@ -10,7 +10,6 @@ Usage:
   uv run .agents/skills/kb-undo-ingest/undo.py <raw-path> [--raw keep|delete|restore] [--apply]
 """
 import argparse
-import io
 import json
 import re
 import shutil
@@ -22,7 +21,7 @@ from pathlib import Path
 from ruamel.yaml import YAML
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from common import SKIP_DERIVED, acquire_inbox_lock, release_inbox_lock  # noqa: E402
+from common import SKIP_DERIVED, acquire_inbox_lock, dump_page, release_inbox_lock  # noqa: E402
 
 SKIP_DIRS = SKIP_DERIVED - {"tofile"}  # undo must traverse tofile/ stubs to reverse them
 SKIP_FILES = {"index.md", "overview.md", "log.md"}
@@ -65,17 +64,6 @@ def _read_yaml(path: Path) -> tuple[dict, str]:
     if not isinstance(fm, dict):
         raise UndoError(f"frontmatter is not a mapping: {path}")
     return fm, parts[2]
-
-
-def _dump_page(fm: dict, body: str) -> str:
-    yaml = YAML()
-    yaml.preserve_quotes = True
-    buf = io.StringIO()
-    yaml.dump(fm, buf)
-    fm_text = buf.getvalue()
-    if not fm_text.endswith("\n"):
-        fm_text += "\n"
-    return f"---\n{fm_text}---{body}"
 
 
 def _sources_links(fm: dict) -> list[str]:
@@ -304,7 +292,7 @@ def apply_undo(
             fm, body = _read_yaml(page)
             new_fm = strip_source_from_fm(fm, raw_path)
             new_body = strip_mention_lines(body, raw_path)
-            page.write_text(_dump_page(new_fm, new_body), encoding="utf-8")
+            page.write_text(dump_page(new_fm, new_body), encoding="utf-8")
 
         # 4. Edges + index
         if edges_path.exists() and removed_edge_block:

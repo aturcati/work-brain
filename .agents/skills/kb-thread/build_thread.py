@@ -19,22 +19,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from common import (  # noqa: E402
+    TYPE_TO_DIR, SKIP_DERIVED as SKIP_DIRS,
+    find_vault_root, graph_db_path, parse_frontmatter,
+)
 
-
-TYPE_TO_DIR: dict[str, str] = {
-    "Person": "people",
-    "Org": "orgs",
-    "Project": "projects",
-    "Topic": "topics",
-    "Decision": "decisions",
-    "Meeting": "meetings",
-    "Source": "sources",
-    "Artifact": "artifacts",
-    "Event": "events",
-}
-
-SKIP_DIRS = {"_inbox", "tofile", "archive", "log-archive", "_maps"}
 SKIP_FILES = {"index.md", "overview.md", "log.md"}
 
 _LINK_RE = re.compile(r"\[\[(raw/[^\]|#]+?)(?:\.md)?(?:[|#][^\]]*)?\]\]")
@@ -48,45 +38,6 @@ class BuildThreadError(Exception):
 
 
 
-def graph_db_path(vault):
-    """Physical Kuzu DB location — outside the cloud-synced vault.
-
-    `.kb/graph.kuzu` stays the LOGICAL name in docs; the 70MB database is
-    rewritten on every projection, which fights cloud-storage sync. Derived data,
-    so it lives under ~/.cache (KB_GRAPH_DIR overrides), keyed by vault path.
-    """
-    import hashlib as _hashlib
-    import os as _os
-    base = Path(_os.environ.get("KB_GRAPH_DIR") or Path.home() / ".cache" / "work-brain-graph")
-    digest = _hashlib.sha256(str(Path(vault).resolve()).encode("utf-8")).hexdigest()[:16]
-    d = base / digest
-    d.mkdir(parents=True, exist_ok=True)
-    return d / "graph.kuzu"
-
-
-def find_vault_root(start: Path) -> Path:
-    current = start.resolve()
-    while current.parent != current:
-        if (current / "CLAUDE.md").exists():
-            return current
-        current = current.parent
-    raise FileNotFoundError("vault root not found")
-
-
-def _parse_fm(path: Path) -> dict | None:
-    text = path.read_text(encoding="utf-8", errors="replace")
-    if not text.startswith("---"):
-        return None
-    parts = text.split("---", 2)
-    if len(parts) < 3:
-        return None
-    try:
-        fm = yaml.safe_load(parts[1])
-    except yaml.YAMLError:
-        return None
-    return fm if isinstance(fm, dict) else None
-
-
 def resolve_entity(vault: Path, slug: str) -> tuple[str, Path]:
     wiki = vault / "wiki"
     for md in wiki.rglob("*.md"):
@@ -95,7 +46,7 @@ def resolve_entity(vault: Path, slug: str) -> tuple[str, Path]:
             continue
         if any(part in SKIP_DIRS for part in rel_parts[:-1]):
             continue
-        fm = _parse_fm(md)
+        fm = parse_frontmatter(md)
         if not fm:
             continue
         if str(fm.get("slug", "")).strip() != slug:
@@ -108,7 +59,7 @@ def resolve_entity(vault: Path, slug: str) -> tuple[str, Path]:
 
 
 def read_sources(page_path: Path) -> list[str]:
-    fm = _parse_fm(page_path)
+    fm = parse_frontmatter(page_path)
     if not fm:
         return []
     out: list[str] = []
