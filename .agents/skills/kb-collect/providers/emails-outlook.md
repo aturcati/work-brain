@@ -87,6 +87,14 @@ For each selected folder:
 
   This intentionally keeps Sent messages from the user's Acme account, including threads with external recipients. Those external participants are preserved as part of the conversation context.
 
+- [ ] **Value-recovery for inbound-external threads** (before discarding domain-filtered mail)
+
+  A message that fails the sender-domain filter (inbound-only external, no own-domain sender in-window) is **not** automatically noise. Before dropping, check whether its sender **domain** or its `_strip_email_prefixes(subject)` matches an existing `wiki/sources/` slug or a canonical entity (a known vendor, sales contact, or tracked thread). If it matches, `read_resource`/`fetch_message` the body and decide by **content value**, not by the mechanical filter:
+  - Vendor counter-offer / status update on a tracked Decision or Source → **keep** (write a new Source `related:` to the existing one, or a `## Re-ingest` if same `conversationId`).
+  - Genuine automated/marketing noise → drop.
+
+  Apply the same value judgement to threads the quality gate would *keep* but that carry no KB value (e.g. one-off internal talk/event invites that would only spawn orphan stubs) — skip and don't record, so they stay re-evaluable. Surface every such keep/drop decision in the run summary; a silent drop on the mechanical filter is a capture gap (e.g. a vendor Enterprise counter-offer on a tracked non-renewal Decision).
+
 - [ ] **Fetch full body only when needed**
 
   If the list result does not include usable body text, call `fetch_message` for that message id and attach the full body as `body_text`.

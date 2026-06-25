@@ -12,6 +12,8 @@
 
   Slug = filename stem. Use as `wiki/sources/<slug>.md` filename.
 
+  **Manual drops arrive with spaces/punctuation in the filename.** Kebab-slugify the stem for the `wiki/sources/<slug>.md` page name, but the **raw archive keeps its original filename** (`move_file.py` preserves it) — cite the spaced path verbatim in `sources:` and raw-path wikilinks; do not rename the raw file. (Underscored stems like `widgetco_handbook_summary` are fine as-is.)
+
 - [ ] **Check if Source page already exists**
 
   ```bash

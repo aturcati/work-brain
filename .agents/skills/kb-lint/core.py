@@ -63,10 +63,18 @@ def extract_body(raw_text: str) -> str:
 
 
 def parse_wikilinks(text: str) -> list[str]:
-    """Extract [[...]] wikilink targets, strip .md extension, return paths."""
+    """Extract [[...]] wikilink targets, strip .md extension, return paths.
+
+    Obsidian piped aliases ([[path|alias]]) and heading anchors ([[path#sec]])
+    keep only the path part — consistent with kb-graph/project.py and
+    common.wikilink_pattern, which both already tolerate `|`/`#`.
+    """
     results = []
     for m in _WIKILINK_RE.finditer(text):
         target = m.group(1).strip()
+        target = target.split("|", 1)[0].split("#", 1)[0].strip()
+        if not target:  # bare same-page heading link [[#section]]
+            continue
         if target.endswith(".md"):
             target = target[:-3]
         results.append(target)

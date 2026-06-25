@@ -62,6 +62,14 @@ def test_parse_wikilinks_empty():
     assert parse_wikilinks("no links here") == []
 
 
+def test_parse_wikilinks_strips_alias_and_heading():
+    # Obsidian piped alias + heading anchor resolve to the path only
+    assert parse_wikilinks("[[wiki/topics/generative-ai|big-tech]]") == ["wiki/topics/generative-ai"]
+    assert parse_wikilinks("[[wiki/people/foo#bio]]") == ["wiki/people/foo"]
+    assert parse_wikilinks("[[wiki/people/foo.md|Foo]]") == ["wiki/people/foo"]
+    assert parse_wikilinks("[[#local-heading]]") == []
+
+
 # ── build_link_graph ──────────────────────────────────────────────────────
 
 def test_build_link_graph_inbound():

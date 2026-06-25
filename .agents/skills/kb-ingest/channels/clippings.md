@@ -16,7 +16,9 @@
 
 - [ ] **Compute Source slug**
 
-  The slug = the filename stem (e.g. `2026-05-24-claude-4-5-is-here`). Use this as the canonical `wiki/sources/<slug>.md` filename.
+  The slug = the filename stem (e.g. `2026-05-24-widgetco-v2-launch`). Use this as the canonical `wiki/sources/<slug>.md` filename.
+
+  **Manual drops (Obsidian Web Clipper) arrive with spaces/punctuation in the filename** (e.g. `WidgetCo Launch Retrospective.md`). Kebab-slugify the stem for the `wiki/sources/<slug>.md` page name, but the **raw archive keeps its original filename** — `move_file.py` preserves it, so `sources:`/raw-path wikilinks cite the spaced path verbatim: `"[[raw/clippings/<YYYY>/<MM>/WidgetCo Launch Retrospective.md]]"`. Wikilinks tolerate spaces; do not rename the raw file.
 
 - [ ] **Check if Source page already exists**
 
